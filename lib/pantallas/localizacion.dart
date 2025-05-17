@@ -1,40 +1,57 @@
-import 'package:frankie/pantallas/principal.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:geolocator/geolocator.dart';
 
 class Localizacion extends StatefulWidget{
-  const Localizacion({super.key, required this.titulo});
+  const Localizacion({super.key,required this.titulo});
 
   final String titulo;
-
-
   @override
   State<Localizacion> createState() => _LocalizacionState();
 
 }
 
-class _LocalizacionState extends State<Localizacion> {
+class _LocalizacionState extends State<Localizacion>{
 
-  TextEditingController _controller = TextEditingController();
+  String _latitud="";
+  String _longitud="";
 
-  Future<SharedPreferences> _obtenerPreferencias() async{
-    final SharedPreferences _prefs = await SharedPreferences.getInstance();
-    return _prefs;
+  Future<Position> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+
+      return Future.error('Location services are disabled.');
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+
+        return Future.error('Location permissions are denied');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+    return await Geolocator.getCurrentPosition();
   }
 
-  Future<void> _escribirDatos() async{
-    SharedPreferences _prefs=await _obtenerPreferencias();
-    await _prefs.setString("Kevin", _controller.text);
+  void _obtenerCoordenadas() async{
+    Position pos= await _determinePosition();
+    setState(() {
+      _latitud=pos.latitude.toString();
+      _longitud=pos.longitude.toString();
+    });
   }
-
-
-  List<Widget> _pantallas=[];
-  Widget _cuerpo=MyHomePage(title: "HOLA QUE HACES");
 
   @override
   void initState(){
     super.initState();
-    //_controller.text="Ingresa algo";
   }
   @override
 
@@ -42,54 +59,57 @@ class _LocalizacionState extends State<Localizacion> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title:Text("SOY LA Localizacion"),
+        title:Text("Localizacion"),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text("Localizacion", style: TextStyle(fontSize: 40,
-            ),
-            ),
-            MaterialButton(onPressed: (){
-              print("Obtener localizaion");
-            },
-
-            ),
-
-            SizedBox(
-              width: 400,
-              child: TextField(
-                controller: _controller,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 35,
-                ),
-
+            Text("Localizacion",
+              style: TextStyle
+                (fontSize: 40,
               ),
-
             ),
-
-
-
+            MaterialButton(
+              shape: Border.all(
+                color: Colors.black,
+              ),
+              color: Colors.greenAccent,
+              onPressed:(){
+                _obtenerCoordenadas();
+              },
+              child: Text("Obtener coordenadas",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 32,
+                ),
+              ),
+            ),
             SizedBox(
               height: 25,
             ),
-
-            MaterialButton(
-              onPressed: ()async{
-                await _escribirDatos();
-                //print(_controller.text);
-                _controller.text="";
-                //widget.funcionCambio(1);
-
-              },
-              color: Theme.of(context).colorScheme.inversePrimary,
-              child: Text("ENVIAR", style: TextStyle(fontSize: 40,
-              ),
-              ),
+            Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children:[
+                  Text(
+                    "Latitud: $_latitud",
+                    style: TextStyle
+                      (fontSize: 32,
+                    ),
+                  )
+                ]
             ),
-
+            Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children:[
+                  Text(
+                    "Longitud: $_longitud",
+                    style: TextStyle
+                      (fontSize: 32,
+                    ),
+                  )
+                ]
+            ),
           ],
         ),
       ),

@@ -1,5 +1,6 @@
 import 'package:frankie/Pantallas/principal.dart';
 import 'package:flutter/material.dart';
+import 'package:frankie/pantallas/localizacion.dart';
 import 'Pantallas/calculadora.dart';
 import 'Pantallas/bienvenida.dart';
 import 'Pantallas/ingresar.dart';
@@ -13,7 +14,7 @@ class Navegador extends StatefulWidget {
 }
 
 class _NavegadorState extends State<Navegador> {
-  int _p = 3; // DEBE DE SER 0
+  int _p = 0; // DEBE DE SER 0
 
   List<Widget> _pantallas = [];
   Widget _cuerpo = MyHomePage(title: "FRANKIE");
@@ -33,9 +34,11 @@ class _NavegadorState extends State<Navegador> {
     _pantallas.add(const Bienvenida(titulo: "BIENVENIDA"));
     _pantallas.add(const Calculadora(titulo: "CALCULADORA"));
     _pantallas.add(const Calendario(titulo: "CALENDARIO"));
+    _pantallas.add(const  Localizacion(titulo: "Localizacion"));
     _pantallas.add(Ingresar(titulo: "INGRESA TU NOMBRE", funcionCambio: _cambiaPantalla));
     _cuerpo = _pantallas[_p];
   }
+
 
   @override
   Widget build(BuildContext context) {
